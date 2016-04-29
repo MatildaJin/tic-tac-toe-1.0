@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tic_tac_toe_test</title>
+    <style>
+        html,body{
+            height:100%;
+        }
+        .game-box{
+            position:relative;
+            top:50%;
+            left:50%;
+            transform:translate(-50%,-50%);
+            -webkit-transform:translate(-50%,-50%);
+            border:solid 1px grey;
+
+        }
+        .cell{
+            border:solid 1px grey;
+            height:100px;
+            width:100px;
+            font-size:70px;
+            font-weight:bold;
+            text-align:center;
+            color:#155c70;
+            text-shadow:2px 2px 2px #fff,2px 2px 2px grey;
+        }
+        #choose_opponent {
+            height:100px;
+            width:300px;
+            text-align:center;
+            position:relative;
+            top:30%;
+            left:50%;
+            transform:translateX(-50%);
+            -webkit-transform:translateX(-50%);
+        }
+        .choose {
+            padding:8px;
+            margin:10px;
+            border-radius:10px;
+            border:solid #000 1px;
+            text-decoration:none;
+        }
+    </style>
+
+    <script>
+
+        var turn,step,mode;
+        var cell=[];
+        var layout=[];                      //to store information:1 for tick,-1 for circle,0 for available steps
+        var chooseHuman=document.getElementById("choose_human");
+        var chooseAi=document.getElementById("choose_ai");
+        for(var i=0;i<3;i++){
+            cell[i]=[];
+            layout[i]=[];
+        }
+        var newGame=function(){
+            for(var i=0;i<3;i++){
+                for(var j=0;j<3;j++){
+                    cell[i][j].innerHTML="";
+                    layout[i][j]=0;
+                }
+            }
+            turn=1;                                         //tick go first
+            step=0;
+        };
+
+         var checkWinner=function(x,y) {                  //to check if the sum of any three cells in a line reaches 3 or 6
+             var rowSum=0;
+             var colSum=0;
+             for (var i = 0; i < 3; i++) {
+                 rowSum += layout[x][i];
+                 colSum += layout[i][y];
+             }
+             if (rowSum === 3 || colSum === 3) {
+                 alert("tick wins");
+                 return true;
+             } else if (rowSum === -3 || colSum === -3) {
+                 alert("circle wins");
+                 return true;
+             }
+             if ((x + y) % 2 === 0) {
+                 var diaUp = layout[2][0] + layout[1][1] + layout[0][2];
+                 var diaDown = layout[0][0] + layout[1][1] + layout[2][2];
+                 if (diaUp === 3 || diaDown === 3) {
+                      alert("tick wins");
+                      return true;
+                 } else if (diaUp === -3 || diaDown === -3) {
+                      alert("circle wins");
+                      return true;
+                 }
+             }
+             if(step===9){
+                 alert("even.");
+                 return true;
+             }
+             return false;
+         }; 
+
+        function startGame(){                                       //add event handler to cell
+            var i,j;
+            for(i=0;i<3;i++) {
+                for (j = 0; j < 3; j++) {
+                    cell[i][j] = document.getElementById("cell_" + i + "_" + j);
+
+                    (function (i, j) {
+                        cell[i][j].onclick = function () {
+                            layout[i][j] = turn;
+                            if (turn === 1) {
+                                this.appendChild(document.createTextNode("√"));
+                                turn = -1;
+                            } else {
+                                this.appendChild(document.createTextNode("○"));
+                                turn = 1;
+                            }
+                            step+=1;
+                            if (checkWinner(i,j)) {
+                                var playAgain = confirm("Would you like to go for another round?");
+                                if (playAgain) {
+                                    newGame();
+                                }
+                            }
+                        }
+                    })(i, j);
+
+                }
+            }
+            newGame();
+        }
+        function addLoadEvent(func) {
+            var oldload = window.onload;
+            if (typeof window.onload != "function") {
+                window.onload = func;
+            } else {
+                window.onload = function () {
+                    oldload();
+                    func();
+                };
+            }
+        }
+
+        addLoadEvent(startGame);                                 //run the game
+
+
+</script>
+</head>
+<body>
+    <table class="game-box">
+        <tr class="row" id="cell_0">
+           <td class="cell" id="cell_0_0"></td>
+           <td class="cell" id="cell_0_1"></td>
+           <td class="cell" id="cell_0_2"></td>
+        </tr>
+        <tr class="row" id="cell_1">
+           <td class="cell" id="cell_1_0"></td>
+           <td class="cell" id="cell_1_1"></td>
+           <td class="cell" id="cell_1_2"></td>
+        </tr>
+        <tr class="row" id="cell_2">
+           <td class="cell" id="cell_2_0"></td>
+           <td class="cell" id="cell_2_1"></td>
+           <td class="cell" id="cell_2_2"></td>
+        </tr>
+    </table>
+    <div id="choose_opponent">
+        <p>Who do you want to play with?</p>
+        <a href="javascript:;void(0)" class="choose" id="choose_human">My friend</a>
+        <a href="javascript:;void(0)" class="choose" id="choose_ai">AI</a>
+    </div>
+</body>
+</html>
