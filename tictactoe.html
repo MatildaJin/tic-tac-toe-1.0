@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tic_tac_toe_test</title>
+    <style>
+        html,body{
+            height:100%;
+        }
+        .game-box{
+            position:relative;
+            top:50%;
+            left:50%;
+            transform:translate(-50%,-50%);
+            -webkit-transform:translate(-50%,-50%);
+            border:solid 1px grey;
+        }
+        .cell{
+            border:solid 1px grey;
+            height:100px;
+            width:100px;
+            font-size:70px;
+            font-weight:bold;
+            text-align:center;
+            color:#155c70;
+            text-shadow:2px 2px 2px #fff,2px 2px 2px grey;
+        }
+        #choose_opponent {
+            height:100px;
+            width:300px;
+            text-align:center;
+            position:relative;
+            top:30%;
+            left:50%;
+            transform:translateX(-50%);
+            -webkit-transform:translateX(-50%);
+        }
+        .choose {
+            padding:8px;
+            margin:10px;
+            border-radius:10px;
+            border:solid #000 1px;
+            text-decoration:none;
+        }
+        .currentMode {
+            background-color:#155c70;
+            color:#eeeeff;
+        }
+    </style>
+
+    <script>
+
+        var turn,step,mode;
+        var cell=[];
+        var layout=[];                      //to store information:1 for tick,-1 for circle,0 for available steps
+        var score=[];
+        var rank=[];
+
+        for(var i=0;i<3;i++){
+            cell[i]=[];
+            layout[i]=[];
+            score[i]=[];
+        }
+        var newGame=function(){
+            for(var i=0;i<3;i++){
+                for(var j=0;j<3;j++){
+                    cell[i][j].innerHTML="";
+                    layout[i][j]=0;
+                    score[i][j]=0;
+                }
+            }
+            turn=1;                                         //tick go first
+            step=0;
+        };
+
+         var checkWinner=function(x,y) {                  //to check if the sum of any three cells in a line reaches 3 or 6
+             var rowSum=0;
+             var colSum=0;
+             for (var i = 0; i < 3; i++) {
+                 rowSum += layout[x][i];
+                 colSum += layout[i][y];
+             }
+             if (rowSum === 3 || colSum === 3) {
+                 alert("tick wins");
+                 return true;
+             } else if (rowSum === -3 || colSum === -3) {
+                 alert("circle wins");
+                 return true;
+             }
+             if ((x + y) % 2 === 0) {
+                 var diaUp = layout[2][0] + layout[1][1] + layout[0][2];
+                 var diaDown = layout[0][0] + layout[1][1] + layout[2][2];
+                 if (diaUp === 3 || diaDown === 3) {
+                      alert("tick wins");
+                      return true;
+                 } else if (diaUp === -3 || diaDown === -3) {
+                      alert("circle wins");
+                      return true;
+                 }
+             }
+             if(step===9){
+                 alert("even.");
+                 return true;
+             }
+             return false;
+         };
+
+        function evaluate(sum){
+            var mark;
+            switch (sum) {
+                case 1:
+                    mark=-10;
+                    break;
+                case -1:
+                    mark=10;
+                    break;
+                case 2:
+                    mark=-100;
+                    break;
+                case -2:
+                    mark=100;
+                    break;
+                case 3:
+                    mark=-1000;
+                    break;
+                case -3:
+                    mark=1000;
+                    break;
+                default:
+                    mark=0;
+            }
+            return mark;
+        }
+
+        var miniMax=function(x,y) {
+            var rowScore=0;
+            var colScore=0;
+            var rowSum=0;
+            var colSum=0;
+            layout[x][y]=-1;
+            for(var i=0;i<3;i++){
+                rowSum=layout[i][0]+layout[i][1]+layout[i][2];
+                colSum=layout[0][i]+layout[1][i]+layout[2][i];
+                rowScore+=evaluate(rowSum);
+                colScore+=evaluate(colSum);
+            }
+            var diaDownSum=layout[0][0]+layout[1][1]+layout[2][2];
+            var diaUpSum=layout[2][0]+layout[1][1]+layout[0][2];
+            var diaDownScore=evaluate(diaDownSum);
+            var diaUpScore=evaluate(diaUpSum);
+            layout[x][y]=0;
+            return rowScore+colScore+diaUpScore+diaDownScore;
+        };
+
+        var aiShouldWin=function(){
+            for(var i=0;i<3;i++){
+                for(var j=0;j<3;j++){
+                    (function(i,j) {
+                        if (layout[i][j] === 0) {
+                            score[i][j]=miniMax(i, j);
+                        } else {
+                            score[i][j]=0;
+                        }
+                        rank.push(score[i][j]);
+                    })(i,j);
+                }
+            }
+            var max=rank[0];
+            var maxIndex=0;
+            for(var q=1; q<rank.length; q++){
+                max= rank[q] >= max ? rank[q] : max;
+                maxIndex= rank[q] >= max ? q : maxIndex;
+            }
+            switch(maxIndex){
+                case 0:
+                    layout[0][0]=-1;
+                    break;
+                case 1:
+                    layout[0][1]=-1;
+                    break;
+                case 2:
+                    layout[0][2]=-1;
+                    break;
+                case 3:
+                    layout[1][0]=-1;
+                    break;
+                case 4:
+                    layout[1][1]=-1;
+                    break;
+                case 5:
+                    layout[1][2]=-1;
+                    break;
+                case 6:
+                    layout[2][0]=-1;
+                    break;
+                case 7:
+                    layout[2][1]=-1;
+                    break;
+                case 8:
+                    layout[2][2]=-1;
+                    break;
+                default:
+                    break;
+            }
+            return maxIndex;
+        };
+
+        function hasClass(element, value) {
+            return element.className.match(new RegExp('(\\s|^)' + value + '(\\s|$)'));
+        }
+
+        function addClass(element, value) {
+            if (!this.hasClass(element, value)) {
+                element.className += " " + value;
+            }
+        }
+
+        function removeClass(element, value) {
+            if (hasClass(element, value)) {
+                var reg = new RegExp('(\\s|^)' + value + '(\\s|$)');
+                element.className = element.className.replace(reg, ' ');
+            }
+        }
+
+        var chooseOpponent=function() {
+            var chooseHuman = document.getElementById("choose_human");
+            var chooseAi = document.getElementById("choose_ai");
+            chooseHuman.onclick = function () {
+                mode = 1;
+                addClass(chooseHuman,"currentMode");
+                removeClass(chooseAi,"currentMode");
+                newGame();
+            };
+            chooseAi.onclick = function () {
+                mode = 2;
+                addClass(chooseAi,"currentMode");
+                removeClass(chooseHuman,"currentMode");
+                newGame();
+                alert("Human go first.");
+            };
+        };
+        function startGame(){                                        //add event handler to cell
+                chooseOpponent();
+                var i, j;
+                var data = document.getElementsByTagName("td");
+                for (i = 0; i < 3; i++) {
+                    for (j = 0; j < 3; j++) {
+                        cell[i][j] = document.getElementById("cell_" + i + "_" + j);
+
+                        (function (i, j) {
+                            cell[i][j].onclick = function () {
+                                if (mode === 1) {
+                                    layout[i][j] = turn;
+                                    if (turn === 1) {
+                                        this.appendChild(document.createTextNode("√"));
+                                        turn = -1;
+                                    } else {
+                                        this.appendChild(document.createTextNode("○"));
+                                        turn = 1;
+                                    }
+                                    step += 1;
+                                    if (checkWinner(i, j)) {
+                                        var playAgain = confirm("Would you like to go for another round?");
+                                        if (playAgain) {
+                                            newGame();
+                                        }
+                                    }
+                                } else if (mode === 2) {
+                                    layout[i][j] = 1;
+                                    this.appendChild(document.createTextNode("√"));
+                                    var q = aiShouldWin();
+                                    data[q].appendChild(document.createTextNode("○"));
+                                    step += 1;
+                                    if (checkWinner(i, j)) {
+                                        playAgain = confirm("Would you like to go for another round?");
+                                    } else {
+
+                                    }
+                                    if (playAgain) {
+                                        newGame();
+                                    }
+                                } else {
+                                    alert("Please choose your opponent below.");
+                                }
+                            }
+                        })(i, j);
+                    }
+                }
+                newGame();
+        }
+        function addLoadEvent(func) {
+            var oldload = window.onload;
+            if (typeof window.onload != "function") {
+                window.onload = func;
+            } else {
+                window.onload = function () {
+                    oldload();
+                    func();
+                };
+            }
+        }
+
+        addLoadEvent(startGame);                                 //run the game
+
+
+</script>
+</head>
+<body>
+    <table class="game-box">
+        <tr class="row" id="cell_0">
+           <td class="cell" id="cell_0_0"></td>
+           <td class="cell" id="cell_0_1"></td>
+           <td class="cell" id="cell_0_2"></td>
+        </tr>
+        <tr class="row" id="cell_1">
+           <td class="cell" id="cell_1_0"></td>
+           <td class="cell" id="cell_1_1"></td>
+           <td class="cell" id="cell_1_2"></td>
+        </tr>
+        <tr class="row" id="cell_2">
+           <td class="cell" id="cell_2_0"></td>
+           <td class="cell" id="cell_2_1"></td>
+           <td class="cell" id="cell_2_2"></td>
+        </tr>
+    </table>
+    <div id="choose_opponent">
+        <p>Who do you want to play with?</p>
+        <span class="choose" id="choose_human">My friend</span>
+        <span class="choose" id="choose_ai">AI</span>
+    </div>
+</body>
+</html>
